@@ -20,7 +20,7 @@ CNV exclusion scripts with clean raw CNV data.
 | --- | --- |
 | Exclusion_1 | Takes data from CNVision merge format and applies chip quality control and markers criteria (detailed in SFigs. 1-2).|
 | Exclusion_2 | Takes data from Exclusion_1 and applies remaining CNV cleaning criteria (detailed in SFig. 1).|
-
+  
 ## 2. CNV Annotations
 
 A list of scripts for implementing different CNV annotations, to be run following CNV Exclusions.
