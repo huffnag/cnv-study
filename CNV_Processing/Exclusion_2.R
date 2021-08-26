@@ -1,3 +1,7 @@
+# Exclusion_2
+# Takes data from Exclusion_1 and applies remaining CNV cleaning criteria (detailed in SFig. 1).
+
+# Set data path and load packages
 path <- "/Users/huffnaglen/PNC CNV Project copy/Analysis/RData"
 library(tidyverse)
 library(IRanges)
@@ -9,27 +13,16 @@ load(paste(path,'cnv.set.11feb.RData',sep = '/'))
 
 # 0. Get CNVs -----------------------------
 cnv.data <- cnv.set
-nrow(cnv.data) # 56,146 cnvs to start
-length(unique(cnv.data$cag_id)) # 7876 subs to start
-length(unique(cnv.data$ChipID)) # 9212 chips to start
-table(cnv.data$Type) 
 
 #### 1. Variant Size >= 50 kb -----------------------------
 cnv.data <- cnv.data %>% 
   filter(sizedel >= 50000)
-nrow(cnv.data) # 29,254 cnvs survive
-length(unique(cnv.data$cag_id)) # 7568 subs survive
-length(unique(cnv.data$ChipID)) # 8380 chips survive
-table(cnv.data$Type) 
 
 ### 2. Variant Confidence Score >= 30 -----------------------------
 cnv.data$ConfidenceScore <- cnv.data$Max.Score
 cnv.data$ConfidenceScore <- as.numeric(cnv.data$ConfidenceScore)
 cnv.data <- cnv.data %>%
   filter(ConfidenceScore >= 30)
-nrow(cnv.data) # 29,254 cnvs survive
-length(unique(cnv.data$cag_id)) # 7568 subs survive
-length(unique(cnv.data$ChipID)) # 8380 chips survive
 
 ### 3. Variant has < 50% overlap w/ Segmental Duplications -----------------------------
 load(paste(path,'segmental.duplications.RData',sep = '/'))
@@ -100,12 +93,6 @@ badlist <- sd.bind$Chr.Start.Stop.hg19.
 cnv.data <- cnv.data %>% 
   filter(!Chr.Start.Stop.hg19. %in% badlist) # removes cnv that overlap > 50% with SD's
 
-nrow(cnv.data) # 26,151 cnvs survive
-length(unique(cnv.data$cag_id)) # 7475  subs survive
-length(unique(cnv.data$ChipID)) # 8232 chips survive
-
-table(cnv.data$Type) 
-
 ### 4. Remove Centromere overlaps -----------------------------
 # remove variants that span the centromere
 load(paste(path,'hg19.RData',sep = '/'))
@@ -174,12 +161,6 @@ cnv.data <- cnv.data %>%
   filter(!Chr.Start.Stop.hg19. %in% badlist) %>%  # removes cnv that overlap > 50% with SD's
   arrange(X.chr)
 
-nrow(cnv.data) # 26,110 cnvs survive
-length(unique(cnv.data$cag_id)) # 7471 subs survive
-length(unique(cnv.data$ChipID)) # 8227 chips survive
-
-table(cnv.data$Type) 
-
 ### 5. Remove Telomere overlaps -----------------------------
 end.telomere.1 <- 100*1000 # always 100k for each chromosme
 telomere.hits <- data.frame()
@@ -200,12 +181,6 @@ for(each in 1:22){
 
 cnv.data <- cnv.data %>%
   filter(!Chr.Start.Stop.hg19. %in% telomere.hits$Chr.Start.Stop.hg19.)
-
-nrow(cnv.data) # 26,034 cnvs survive 
-length(unique(cnv.data$cag_id)) # 7467 subs survive
-length(unique(cnv.data$ChipID)) # 8223 chips survive
-
-table(cnv.data$Type) 
 
 ### 6. Variant has < 50% overlap with major histocompatibility complex  -----------------------------
 pnc.data.clean.hmc <- cnv.data %>% filter(X.chr==6)
@@ -251,15 +226,9 @@ badlist <- pnc.data.bad$Chr.Start.Stop.hg19.
 cnv.data <- cnv.data %>% 
   filter(!Chr.Start.Stop.hg19. %in% badlist) # removes cnv that overlap > 50% with SD's
 
-nrow(cnv.data) # 25,704 cnvs survive
-length(unique(cnv.data$cag_id)) # 7458 subs survive
-length(unique(cnv.data$ChipID)) # 8209 chips survive
-
-table(cnv.data$Type) 
-
-### chip check
-# make a df of chips that are now gone
-# they have zero cnv and zero burden
+### Chip check
+# Make a data frame of chips that are now gone but were of good quality from Exclusion_1
+# They have zero cnv and zero burden
 load(paste(path,'list.a2.RData',sep = '/'))
 
 list.b <- list.a %>% 
@@ -285,18 +254,8 @@ qual.chip.data <- chip.data %>%
 
 cnv.data <- cnv.data %>% 
   filter(ChipID %in% qual.chip.data$ChipID) 
-nrow(cnv.data) # 25,424 cnvs survive
-length(unique(cnv.data$cag_id)) # 7448 subs survive
-length(unique(cnv.data$ChipID)) # 8196 chips survive
 
-table(cnv.data$Type) 
-
-# which 0cnv 0mb chips are in qual.chip.data but not cnvdata at this point?
-length(setdiff(qual.chip.data$ChipID,cnv.data$ChipID)) # 2245 chips different 
-nrow(qual.chip.data)
-
-# thinking about adding to cnv level df the chip and cag ids with NA for all other variables here 
-# might just be easier overall
+# Add the cnvless quality chips to cnv-level dataset with null/NA values for cnv variables
 load(paste(path,'chip.qc.cag.RData',sep = '/'))
 adding.cnv <- chip.qc.cag %>% 
   filter(ChipID %in% setdiff(qual.chip.data$ChipID,cnv.data$ChipID)) %>% 
@@ -308,12 +267,6 @@ adding.cnv[,16] <- adding.cnv$ChipID
 adding.cnv[,1] <- NA
 names(adding.cnv) <- names(cnv.data)
 cnv.data <- rbind(cnv.data,adding.cnv) # this cnv level data now has the 'empty' chips
-
-nrow(cnv.data) # 27,669 cnvs survive
-length(unique(cnv.data$cag_id)) # 8001 subs survive
-length(unique(cnv.data$ChipID)) # 10,441 chips survive
-
-table(cnv.data$Type) 
 
 ### 9. Pick lowest lrrsd for subs w/ more than 1 chip
 chipppers <- cnv.data %>% 
@@ -362,15 +315,6 @@ for(i in unique(nonperfect.subs$cag_id)){
 
 cnv.data <- rbind(empty.df,perfect.subs)
 
-nrow(cnv.data) # 20,777 cnvs survive
-length(unique(cnv.data$cag_id)) # 8000 subs survive
-length(unique(cnv.data$ChipID)) # 8000 chips survive
-
-table(cnv.data$Type)
-
-#save(cnv.data,file = 'dels.22sep20.prefam.RData')
-#load('dels.22sep20.prefam.RData')
-
 ### 10. Pick random family member per family (see fam id script for methods)
 
 # Read ancestry data and cnv data ----------------------------- 
@@ -404,8 +348,6 @@ for(each in fam.id.list){
 
 # see how many fam chips in our clean data
 check.fams <- cnv.data %>% filter(chip %in% fam.df$chip)
-nrow(check.fams)
-# 2940 cnvs are in a family
 
 # how do I give each check.fams subject their family id name as a variable?
 length(unique(check.fams$cag_id))
@@ -418,11 +360,8 @@ fam.ids.pncs <- merge(check.fams,fams.distinct,by='chip')
 length(unique(fam.ids.pncs$fam.id))
 # 459 fams with fam id's
 
-
 # no family data (later for binding) -----
 lof.nofam <- cnv.data %>% filter(!chip %in% fam.df$chip)
-nrow(lof.nofam) # 19,315
-
 
 # full sample
 all.fams <- vector()
@@ -452,12 +391,5 @@ fam.sampled <- fam.sampled %>%  # remove fam id for rbinding
 
 # clean data no fam members
 cnv.data <- as.data.frame(rbind(lof.nofam,fam.sampled))
-nrow(cnv.data) # 19,450 cnvs survive
-length(unique(cnv.data$cag_id)) # 7135 subs survive
-length(unique(cnv.data$ChipID)) # 7135 chips survive
-
-table(cnv.data$Type) 
-# 8,603 duplications
-# 12,359 deletions
 
 save(cnv.data,file = paste(path,'illumina.11feb.RData',sep = '/'))
