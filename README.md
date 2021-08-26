@@ -5,13 +5,15 @@
 
 This repository contains code to replicate the main PNC-CNV project methods and results.
 
-Pre-hoc data structures:
+## Pre-hoc data structures
 
-File name | Dataset name | Variables |
+These files are currently required prior to running scripts: 
+
+File name | R environment name | Variable names |
 | ---  | --- | --- |
-| .RData | chip.qc.cag | ChipID Freq Burden lrrsd bafsd wavef cagid |
-| .RData | chip.markers | nmarkers |
-
+| full.cnvision_merge.RData | dtcnv | TBD |
+| chip.qc.cag.RData.RData | chip.qc.cag | "ChipID" "Freq" "Burden" "lrrsd" "bafsd" "wavef" "cagid" |
+| chipmarkers.csv | chip.markers | "chipids" "nmarkers" |
 
 ## 1. CNV Processing/Exclusions
 
