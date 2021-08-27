@@ -1,24 +1,21 @@
+# Annotates CNV for pTS and pHI score (among other intolerance scores), returns subject-level data frame.
+# Subsequent results are used in generating Figure 2.
 
-
-# Annotates for main figures.
-
+# Set data path
 path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
 
+# Load pakcages
 library(tidyverse)
 
 # Read Data -----
-load(paste(path,'illumina.11feb.RData',sep = '/'))
-load(paste(path,'ploi.RData',sep = '/'))
+load(paste(path,'illumina.11feb.RData',sep = '/')) # This data comes from Exclusion_2.R
+load(paste(path,'ploi.RData',sep = '/')) # 
 phi <- read.csv(paste(path,'phi.csv',sep = '/'))
-rm(thing,cnv_dels.dups,cogdata)
 
 # Calculate oeuf Scores for Individual CNV's -----
 ploi <- ploi %>% 
-  filter(chromosome!="X" & chromosome!="Y") %>% 
+  filter(chromosome!="X" & chromosome!="Y") %>% # don't use sex chromosomes for this
   mutate(chromosome=as.numeric(chromosome))
-
-length(setdiff(ploi$gene,phi$gene))
-# 1883 genes are in gnomad but not phi
 
 with.phi <- merge(ploi,phi,by='gene')
 
@@ -30,26 +27,28 @@ ploi <- rbind(with.phi,no.phi)
 
 lof.data <- data.frame()
 
-l.df <- length(cnv.data)+1
+l.df <- length(cnv.data)+1 # the length of the cnv data frame, for adding annotations
 
-cnv.data[,l.df] <- 0 # initialize an empty col for pLI
-cnv.data[,l.df+1] <- 0 # initialize an empty col for pLI
-cnv.data[,l.df+2] <- 0 # initialize an empty col for pLI
-cnv.data[,l.df+3] <- 0 # initialize an empty col for pTS
-cnv.data[,l.df+4] <- 0 # initialize an empty col for pHI
-
+# Initialize empty cols for annotations
+cnv.data[,l.df] <- 0 
+cnv.data[,l.df+1] <- 0
+cnv.data[,l.df+2] <- 0 
+cnv.data[,l.df+3] <- 0 
+cnv.data[,l.df+4] <- 0
 
 cnv.data <- ungroup(cnv.data)
 
-ploi$ngenes <- 1
+ploi$ngenes <- 1 # each row of ploi = 1 gene
 
+# The loop below subsets the CNV and ploi data into chromosomes, then tests whether each ploi gene falls completely within each CNV.
+# If it does, the gene and its intolerance scores are saved and used to annotate the CNV.
 for(chrome in 1:22){ # for each chromosome
   print(chrome)
   
   cnv.data.pli <- cnv.data %>% 
     filter(X.chr==chrome)
   
-  ploi.loop <- ploi %>% # filter valu es so that only genes which potentially fall completely within a cnv are kept
+  ploi.loop <- ploi %>% # filter values so that only genes which potentially fall completely within a cnv are kept
     filter(chromosome==chrome) %>%
     filter(end_position <= max(cnv.data.pli$end.hg19.)) %>%
     filter(start_position >= min(cnv.data.pli$start.hg19.)) %>%
@@ -104,7 +103,6 @@ pTSs <- lof.data.v2 %>%
   mutate(cnv.pTS=0) 
 
 lof.data.v5 <- rbind(pHIs,pTSs)
-
 
 subject.annotated <- lof.data.v5 %>% 
   group_by(cag_id) %>% 
