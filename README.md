@@ -3,17 +3,7 @@
 
 #### Authors: TBD
 
-This repository contains code to replicate the main PNC-CNV project methods and results.
-
-## Pre-hoc data structures
-
-These files are currently required prior to running scripts: 
-
-File name | R environment name | Variable names |
-| ---  | --- | --- |
-| full.cnvision_merge.RData | dtcnv | TBD |
-| chip.qc.cag.RData.RData | chip.qc.cag | "ChipID" "Freq" "Burden" "lrrsd" "bafsd" "wavef" "cagid" |
-| chipmarkers.csv | chip.markers | "chipids" "nmarkers" |
+This repository contains code to replicate the main PNC-CNV project methods and results. These scripts are performed on output after running CNVision and filtering steps described at: https://github.com/MartineauJeanLouis/MIND-GENESPARALLELCNV
 
 ## 1. CNV Processing/Exclusions
 
