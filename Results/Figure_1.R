@@ -2,6 +2,7 @@ library(gridExtra)
 library(ggpubr)
 library(ggrepel)
 library(wesanderson)
+library(tidyverse)
 
 # Set path to data files and load data -----
 path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
@@ -10,7 +11,7 @@ load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavi
 load(paste(path,'pTSpHI.cag.annotated.26feb.RData',sep = '/')) # the LOF and Burden CNV data
 load(paste(path,'dup.cluster.RData',sep = '/'))
 
-# Merge together the LOF dataset with cleaned chip subjects and PNC CNB 
+# Merge together the LOF dataset with cleaned chip subjects and PNC CNB
 adataset <- merge(cogdata,subject.annotated,by='cag_id')
 
 adataset <- adataset %>% 
@@ -42,7 +43,7 @@ dup.cluster <- ggplot(cluster.frame %>% filter(csize<=20),aes(csize,component.me
   geom_hex(bins=55)  +
   scale_fill_gradientn(colors =  wes_palette('Zissou1'),
                        guide = 'legend' ,breaks=c(1,10,100,1000,3000),trans='log')+
-  xlab('Cluster size')+
+  xlab('Duplication frequency')+
   ylab('pTS mean')+
   xlim(0,20)+
   geom_label_repel(size=4,data = cluster.frame %>% filter(component.mean.pli>10), 
@@ -59,7 +60,7 @@ del.cluster <- ggplot(cluster.frame %>% filter(csize<=20),aes(csize,component.me
   geom_hex(bins=55)  +
   scale_fill_gradientn(colors =  wes_palette('Zissou1'),
                        guide = 'legend' ,breaks=c(1,10,100,1000,3000),trans='log')+
-  xlab('Cluster size')+
+  xlab('Deletion frequency')+
   ylab('pHI mean')+
   xlim(0,20)+
   geom_label_repel(size=4,data = cluster.frame %>% filter(component.mean.pli>10), 
