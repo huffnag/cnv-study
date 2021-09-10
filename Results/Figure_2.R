@@ -106,24 +106,21 @@ full.list <- full.list %>%
 
 
 cpanel <- ggplot(data=full.list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
-  scale_alpha_discrete(range=c(0.2, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
-  geom_point() +
+  scale_alpha_discrete(range=c(0.3, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
+  geom_pointrange(data = full.list %>% filter(signif=='yes'), aes(xmin=abs(conf.low), xmax=abs(conf.high)),position = position_jitter(height = 0.45)) +
+  geom_pointrange(data = full.list %>% filter(signif=='no',estimate>0),aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.45)) +
+  geom_pointrange(data = full.list %>% filter(signif=='no',estimate<0),aes(xmin=abs(estimate)-max(conf.high,conf.low), xmax=abs(conf.low)),position = position_jitter(height = 0.45)) +
   geom_vline(xintercept = 0,lty=2) +
   xlab("Standardized Effect (Absolute Value)") +
   ylab("") +
   theme_light()+
-  scale_color_discrete(name = "Term", labels = c("pHI", "pTS"))+
+  scale_color_discrete(name = "Term", labels = c("pHI del.", "pTS dup."))+
   facet_wrap(~var,ncol = 1,shrink = T,drop = T,scales = 'free')+
-  xlim(0,.25)+
+  xlim(-0.025,.15)+
   theme(legend.text = element_text(size = 12),
         text = element_text(size=12))+
   theme(strip.text = element_text(colour = 'white'))+
   theme(strip.background =element_rect(fill="black"))
-  
-
-
-
-
 
 # Load packages -----
 library(tidyverse) # for manipulating data 
