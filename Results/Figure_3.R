@@ -162,7 +162,7 @@ tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf,
 # figure 3
 fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=term)) +
   scale_alpha_discrete(range=c(0.25, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
-  geom_point(size=2) +
+  geom_pointrange(aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.45)) +
   geom_vline(xintercept = 0,lty=2) +
   xlab("Standardized Effect") +
   ylab("") +
@@ -170,14 +170,15 @@ fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=te
   theme_light()+
   facet_wrap(~va,ncol = 1,shrink = T,drop = T,scales = 'free')+
   theme(text = element_text(size=12))+
-  coord_cartesian(xlim = c(-.1,.4),clip = 'off')+
   theme(strip.text = element_text(colour = 'white'))+
+  coord_cartesian(xlim = c(-.15,.4),clip = 'off')+
   theme(strip.background =element_rect(fill="black"))
 
+fig
 
 pdf(file = paste(path,'fig3.pdf',sep = '/'),width = 10,height = 8)
 tag_facet2(fig,tag_pool = LETTERS,open = '',x=-.16,vjust = .4)
 dev.off()
 
 
-
+  
