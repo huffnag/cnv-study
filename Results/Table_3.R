@@ -83,5 +83,8 @@ reg.result <- numer_mods %>%
   select(term,estimate,CI,p.value,AIC) %>% 
   mutate(estimate=round(estimate,3))
 
+reg.result$fdr <- p.adjust(reg.result$p.value)
+reg.result$signif <- ifelse(reg.result$fdr<0.05,'yes','no')
+
 write_clip(reg.result)
 

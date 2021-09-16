@@ -1,11 +1,11 @@
-# Load packages -----
-library(tidyverse) # for manipulating data 
+# Load packages
+library(tidyverse) # for manipulating data
 library(data.table)
-library(clipr) 
+library(clipr)
 library(ggpubr)
 library(broom)
 
-# Set path to data files and load data -----
+# Set path to data files and load data
 path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
 
@@ -25,10 +25,10 @@ deletions <- subject.annotated %>%
 
 subject.annotated <- merge(deletions,duplications,by = 'cag_id')
 
-# Merge together the LOF dataset with cleaned chip subjects and PNC CNB 
+# Merge together the LOF dataset with cleaned chip subjects and PNC CNB
 adataset <- merge(cogdata,subject.annotated,by='cag_id')
 
-adataset <- adataset %>% 
+adataset <- adataset %>%
   mutate(sex=as.factor(sex),
          race2=as.factor(race2),
          Trauma=as.numeric(traumaExposure))
@@ -82,6 +82,9 @@ reg.result <- numer_mods %>%
   select(!conf.low & !conf.high) %>% 
   select(term,estimate,CI,p.value,AIC) %>% 
   mutate(estimate=round(estimate,3))
+
+reg.result$fdr <- p.adjust(reg.result$p.value)
+reg.result$signif <- ifelse(reg.result$fdr<0.05,'yes','no')
 
 write_clip(reg.result)
 

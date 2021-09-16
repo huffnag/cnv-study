@@ -166,7 +166,7 @@ fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=te
   geom_vline(xintercept = 0,lty=2) +
   xlab("Standardized Effect") +
   ylab("") +
-  scale_color_discrete(name = "Term", labels = c("SES", "pHI",'PRS-G','Trauma'))+
+  scale_color_discrete(name = "Term", labels = c("SES", "pHI del.",'PRS-G','Trauma'))+
   theme_light()+
   facet_wrap(~va,ncol = 1,shrink = T,drop = T,scales = 'free')+
   theme(text = element_text(size=12))+
@@ -174,10 +174,8 @@ fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=te
   coord_cartesian(xlim = c(-.15,.4),clip = 'off')+
   theme(strip.background =element_rect(fill="black"))
 
-fig
-
 pdf(file = paste(path,'fig3.pdf',sep = '/'),width = 10,height = 8)
-tag_facet2(fig,tag_pool = LETTERS,open = '',x=-.16,vjust = .4)
+tag_facet2(fig,tag_pool = LETTERS,open = '',x=-.25,vjust = .4)
 dev.off()
 
 

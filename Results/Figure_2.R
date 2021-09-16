@@ -106,7 +106,7 @@ full.list <- full.list %>%
 
 
 cpanel <- ggplot(data=full.list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
-  scale_alpha_discrete(range=c(0.3, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
+  scale_alpha_discrete(range=c(0.18, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
   geom_pointrange(data = full.list %>% filter(signif=='yes'), aes(xmin=abs(conf.low), xmax=abs(conf.high)),position = position_jitter(height = 0.45)) +
   geom_pointrange(data = full.list %>% filter(signif=='no',estimate>0),aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.45)) +
   geom_pointrange(data = full.list %>% filter(signif=='no',estimate<0),aes(xmin=abs(estimate)-max(conf.high,conf.low), xmax=abs(conf.low)),position = position_jitter(height = 0.45)) +
@@ -177,7 +177,5 @@ pdf(file = paste(path,'fig2.v2.pdf',sep = '/'),width = 12,height = 6)
 grid.arrange(apanel, cpanel,bpanel, nrow=2,ncol=2,
              layout_matrix = rbind(c(1,2), c(3,2)),
              widths = c(1,1.75))
-
-
 
 dev.off()
