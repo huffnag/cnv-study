@@ -5,7 +5,8 @@ library(readxl) # for reading microsoft excel files
 library(sjPlot) # for regression model tables
 library(gridExtra)
 library(broom)
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
+figpath <- paste(path,'figs',sep='/')
 
 
 read_excel_allsheets <- function(filename, tibble = T) { # a function to read all 3 sheets from the PRS excel file
@@ -162,11 +163,11 @@ tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf,
 # figure 3
 fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=term)) +
   scale_alpha_discrete(range=c(0.25, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
-  geom_pointrange(aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.45)) +
+  geom_pointrange(aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.2)) +
   geom_vline(xintercept = 0,lty=2) +
   xlab("Standardized Effect") +
   ylab("") +
-  scale_color_discrete(name = "Term", labels = c("SES", "pHI del.",'PRS-G','Trauma'))+
+  scale_color_discrete(name = "Term", labels = c("SES", "pHI del.",'PGS-g','Trauma'))+
   theme_light()+
   facet_wrap(~va,ncol = 1,shrink = T,drop = T,scales = 'free')+
   theme(text = element_text(size=12))+
@@ -174,7 +175,7 @@ fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=te
   coord_cartesian(xlim = c(-.15,.4),clip = 'off')+
   theme(strip.background =element_rect(fill="black"))
 
-pdf(file = paste(path,'fig3.pdf',sep = '/'),width = 10,height = 8)
+pdf(file = paste(figpath,'fig3.pdf',sep = '/'),width = 10,height = 8)
 tag_facet2(fig,tag_pool = LETTERS,open = '',x=-.25,vjust = .4)
 dev.off()
 
