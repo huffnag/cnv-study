@@ -5,7 +5,8 @@ library(wesanderson)
 library(tidyverse)
 
 # Set path to data files and load data -----
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
+figpath <- '/Users/aa2227/Documents/pncCNV/clean/figs'
 regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
 load(paste(path,'pTSpHI.cag.annotated.26feb.RData',sep = '/')) # the LOF and Burden CNV data
@@ -52,8 +53,6 @@ dup.cluster <- ggplot(cluster.frame %>% filter(csize<=20),aes(csize,component.me
   theme(text = element_text(size=16))+
   theme(legend.position = 'none')
 
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
-
 load(paste(path,'del.cluster.RData',sep = '/'))
 
 del.cluster <- ggplot(cluster.frame %>% filter(csize<=20),aes(csize,component.mean.pli))+ # mean for cluster
@@ -74,7 +73,7 @@ del.cluster <- ggplot(cluster.frame %>% filter(csize<=20),aes(csize,component.me
         legend.text = element_text(size = 12),
         legend.background = element_blank())
 
-pdf(file = paste(path,'fig1.pdf',sep = '/'),width = 12,height = 6)
+pdf(file = paste(figpath,'fig1.pdf',sep = '/'),width = 12,height = 6)
 
 ggarrange(del.cluster, dup.cluster,histo, nrow=1,labels = c("A)", "B)",'C)'))
 
