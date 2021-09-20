@@ -6,7 +6,7 @@ library(ggpubr)
 library(broom)
 
 # Set path to data files and load data
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
 
 # need to load deletions and duplications together
