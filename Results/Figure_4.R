@@ -35,8 +35,8 @@ toplot[1,] <- toplot[1,]/sum(toplot[1,])
 toplot[2,] <- toplot[2,]/sum(toplot[2,])
 
 toplotdf <- data.frame(proportion=c(toplot[,1],toplot[,2]), CNV_Intolerance_Score=c(rownames(toplot), rownames(toplot)), 
-  growthcart=c('low deviance', 'low deviance','high deviance','high deviance'))
-p <- ggplot(data=toplotdf, aes(x=CNV_Intolerance_Score, y=proportion, fill=growthcart)) +
+  growthchart=c('low deviance', 'low deviance','high deviance','high deviance'))
+p <- ggplot(data=toplotdf, aes(x=CNV_Intolerance_Score, y=proportion, fill=growthchart)) +
 geom_bar(stat="identity", color="black", position=position_dodge())+
   theme_minimal()
 
@@ -101,9 +101,9 @@ toplot[1,] <- toplot[1,]/sum(toplot[1,])
 toplot[2,] <- toplot[2,]/sum(toplot[2,])
 
 toplotdf <- data.frame(proportion=c(toplot[,1],toplot[,2]), CNV_Intolerance_Score=c(rownames(toplot), rownames(toplot)), 
-  growthcart=c('low deviance', 'low deviance','high deviance','high deviance'))
+  growthchart=c('low deviance', 'low deviance','high deviance','high deviance'))
 
-p <- ggplot(data=toplotdf, aes(x=CNV_Intolerance_Score, y=proportion, fill=growthcart)) +
+p <- ggplot(data=toplotdf, aes(x=CNV_Intolerance_Score, y=proportion, fill=growthchart)) +
 geom_bar(stat="identity", color="black", position=position_dodge())+
   theme_minimal()
 
@@ -133,12 +133,12 @@ toplot[2,] <- toplot[2,]/sum(toplot[2,])
 toplot[3,] <- toplot[3,]/sum(toplot[3,])
 
 toplotdf <- data.frame(proportion=c(toplot[,1],toplot[,2]), CNV_Intolerance_Score=c(rownames(toplot), 
-  rownames(toplot)), growthcart=c('low deviance', 'low deviance','low deviance', 
+  rownames(toplot)), growthchart=c('low deviance', 'low deviance','low deviance', 
   'high deviance','high deviance', 'high deviance'))
 
 
 
-p <- ggplot(data=toplotdf, aes(x=CNV_Intolerance_Score, y=proportion, fill=growthcart)) +
+p <- ggplot(data=toplotdf, aes(x=CNV_Intolerance_Score, y=proportion, fill=growthchart)) +
 geom_bar(stat="identity", color="black", position=position_dodge())+
   theme_minimal()
 
