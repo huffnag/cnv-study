@@ -7,7 +7,7 @@ library(tidyverse)
 # Set path to data files and load data -----
 path <- '/Users/aa2227/Documents/pncCNV/clean'
 figpath <- '/Users/aa2227/Documents/pncCNV/clean/figs'
-regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
+regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications' ####FLAG
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
 load(paste(path,'pTSpHI.cag.annotated.26feb.RData',sep = '/')) # the LOF and Burden CNV data
 load(paste(path,'dup.cluster.RData',sep = '/'))
