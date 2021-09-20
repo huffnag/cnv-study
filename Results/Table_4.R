@@ -1,7 +1,7 @@
 
 # Set path to data files and load data -----
 library(tidyverse)
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
 regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
 #load(paste(path,'illumina.25january.RData',sep = '/')) # cleaned chip dataset
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
@@ -25,7 +25,6 @@ cog.list <- names(adataset[c(28:29,31:36)])
 
 
 # Table with results for logistic regression model for psychosis spectrum, ADHD, anxiety, depression. 
-# (Take out ASD for now because it’s too complicated I think – I’ll discuss with other faculty about whether to include or not)
 better.psych.info <- read.csv(paste(path,'pncdxcagid2.csv',sep = '/'))
 
 cnv.psych <- merge(adataset,better.psych.info,by='cag_id')
@@ -40,9 +39,9 @@ cnv.psych <- cnv.psych %>%
 
 
 write_clip(rbind(
-  tidy(glm(Psychosis_Spectrum~pHI+sex+race2+envSES,cnv.psych,family = 'binomial'))[2,],
-  tidy(glm(ADHD~pHI+sex+race2+envSES,cnv.psych,family = 'binomial'))[2,],
-  tidy(glm(AnyAnxietyDis~pHI+sex+race2+envSES,cnv.psych,family = 'binomial'))[2,],
-  tidy(glm(Depression~pHI+sex+race2+envSES,cnv.psych,family = 'binomial'))[2,]))
+  tidy(glm(Psychosis_Spectrum~pHI+sex+race2+envSES + traumaExposure,cnv.psych,family = 'binomial'))[2,],
+  tidy(glm(ADHD~pHI+sex+race2+envSES + traumaExposure,cnv.psych,family = 'binomial'))[2,],
+  tidy(glm(AnyAnxietyDis~pHI+sex+race2+envSES + traumaExposure,cnv.psych,family = 'binomial'))[2,],
+  tidy(glm(Depression~pHI+sex+race2+envSES + traumaExposure,cnv.psych,family = 'binomial'))[2,]))
 
 
