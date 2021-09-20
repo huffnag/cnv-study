@@ -1,15 +1,21 @@
 
-
-
-
 # NOTE #
 # Run Annotation_1 before this script to get 'pTSpHI.cag.annotated.26feb.RData'
 
 library(broom)
 library(wesanderson)
+library(tidyverse) # for manipulating data 
+library(sjPlot) # for regression model tables
+library(data.table) # for turning lists into dataframes
+library(ggpubr)
+library(gridExtra)
+library(broom)
+library(clipr)
 
 # Set path to data files and load data -----
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
+figpath <- paste(path,'figs',sep='/')
+
 regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
 #load(paste(path,'illumina.25january.RData',sep = '/')) # cleaned chip dataset
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
@@ -64,7 +70,7 @@ list <- as.data.frame(do.call(rbind,list))
 list <- list %>%
   arrange(estimate) %>% 
   filter(!term %in% c('(Intercept)','sex2','race22','race23','envSES','Trauma')) %>% 
-  mutate(var='Correlative Traits')
+  mutate(var='Correlated Traits Model')
 
 list$response <- gsub('_ar', "", list$response)
 
@@ -87,7 +93,7 @@ list <- as.data.frame(do.call(rbind,list))
 list <- list %>% 
   arrange(estimate) %>% 
   filter(!term %in% c('(Intercept)','sex2','race22','race23','envSES','Trauma')) %>% 
-  mutate(var='Bi-factor')
+  mutate(var='Bifactor Model')
 
 list$response <- gsub('_ar', "", list$response)
 
@@ -102,7 +108,7 @@ full.list <- rbind(full.list,list)
 full.list <- full.list %>% 
   mutate(fdr=p.adjust(p.value,method = 'fdr')) %>%
   mutate(signif=ifelse(fdr<0.05,'yes','no'),
-         var=factor(var,levels = c('Cognitive Outcome','Bi-factor','Correlative Traits')))
+         var=factor(var,levels = c('Cognitive Outcome','Bifactor Model','Correlated Traits Model')))
 
 
 cpanel <- ggplot(data=full.list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
@@ -122,17 +128,7 @@ cpanel <- ggplot(data=full.list,aes(x=abs(estimate), y=response,alpha=factor(sig
   theme(strip.text = element_text(colour = 'white'))+
   theme(strip.background =element_rect(fill="black"))
 
-# Load packages -----
-library(tidyverse) # for manipulating data 
-library(sjPlot) # for regression model tables
-library(data.table) # for turning lists into dataframes
-library(ggpubr)
-library(gridExtra)
-library(broom)
-library(clipr)
-
 # Set path to data files and load data -----
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
 regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
 #load(paste(path,'illumina.25january.RData',sep = '/')) # cleaned chip dataset
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
@@ -151,10 +147,10 @@ adataset <- adataset %>%
 apanel <- ggplot(adataset,aes(x=log(pHI+1),y=Overall_Accuracy))+
   geom_hex(bins=50)+
   scale_fill_gradientn(name='# subjects',colors = wes_palette(n=5, name="Zissou1"),trans='log10',guide = 'legend')+
-  ylim(-10,9)+
+  ylim(-5,5)+
   ylab('Overall Accuracy')+
   xlab('log(pHI+1)')+
-  geom_smooth(method = 'lm',linetype='dotted',se=F,color="black")+
+  geom_smooth(method = 'lm',linetype='dashed',se=F,color="black")+
   theme_light()+
   theme(legend.position = c(.5, .8),
         legend.direction = "horizontal",
@@ -165,14 +161,14 @@ apanel <- ggplot(adataset,aes(x=log(pHI+1),y=Overall_Accuracy))+
 bpanel <- ggplot(adataset,aes(x=log(pHI+1),y=Bifactor_Psychosis_ar))+
   geom_hex(bins=50)+
   scale_fill_gradientn(name='n subjects',colors = wes_palette(n=5, name="Zissou1"),trans='log10',guide = 'legend')+
-  ylim(-9,9)+
+  ylim(-5,5)+
   ylab('Bifactor Psychosis')+
   xlab('log(pHI+1)')+
-  geom_smooth(method = 'lm',linetype='dotted',se=F,color="black")+
+  geom_smooth(method = 'lm',linetype='dashed',se=F,color="black")+
   theme_light()+
   theme(legend.position = 'none')
 
-pdf(file = paste(path,'fig2.v2.pdf',sep = '/'),width = 12,height = 6)
+pdf(file = paste(figpath,'fig2.v2.pdf',sep = '/'),width = 12,height = 6)
 
 grid.arrange(apanel, cpanel,bpanel, nrow=2,ncol=2,
              layout_matrix = rbind(c(1,2), c(3,2)),
