@@ -2,7 +2,7 @@
 # Subsequent results are used in generating Figure 2.
 
 # Set data path
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
 
 # Load pakcages
 library(tidyverse)
