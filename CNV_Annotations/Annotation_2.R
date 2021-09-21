@@ -1,4 +1,4 @@
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
 
 library(tidyverse)
 
