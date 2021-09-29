@@ -5,7 +5,7 @@ library(readxl) # for reading microsoft excel files
 library(sjPlot) # for regression model tables
 library(gridExtra)
 library(broom)
-path <- '/Users/aa2227/Documents/pncCNV/clean'
+path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
 figpath <- paste(path,'figs',sep='/')
 
 
@@ -99,6 +99,11 @@ list <- list %>%
 listbind <- list %>% 
   mutate(va='Models of cognition')
 
+
+listbind$response <- factor(listbind$response,levels = rev(c('Overall Accuracy','Executive Complex Cognition Accuracy','Memory Accuracy',
+                                                             "Social Cognition Accuracy","Overall Speed","Memory Speed",
+                                                             "Slow Speed","Fast Speed")))
+
 iq <- ggplot(data=list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
   scale_alpha_discrete(range=c(0.35, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
   geom_point() +
@@ -131,13 +136,11 @@ list$response <- gsub('PSYCHOSIS', "Psychosis", list$response)
 
 list$response <- gsub('FEAR', "Fear", list$response)
 
-list$response <- factor(list$response, levels = list$response)
-
-list$response <- factor(list$response, levels = list$response)
-
-
 listbind2 <- list %>% 
   mutate(va='Models of psychopathology')
+
+listbind2$response <- factor(listbind2$response,levels = rev(c("Bifactor Psychosis","Bifactor Overall Psychopathology",
+                                                               "Bifactor Mood","Bifactor Fear","Bifactor Externalizing")))
 
 scz <- ggplot(data=list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
   scale_alpha_discrete(range=c(0.35, 1),name = "pFDR < 0.05", labels = c("False", "True")) +

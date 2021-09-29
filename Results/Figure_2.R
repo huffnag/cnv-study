@@ -110,6 +110,13 @@ full.list <- full.list %>%
   mutate(signif=ifelse(fdr<0.05,'yes','no'),
          var=factor(var,levels = c('Cognitive Outcome','Bifactor Model','Correlated Traits Model')))
 
+full.list$response <- gsub(' $','',full.list$response)
+full.list$response <- gsub('^ ','',full.list$response)
+
+full.list$response <- factor(full.list$response,levels = rev(c('Overall Accuracy','Executive Complex Cognition Accuracy','Memory Accuracy',
+                                                               "Social Cognition Accuracy","Overall Speed","Memory Speed",
+                                                               "Slow Speed","Fast Speed","Psychosis","Overall Psychopathology",
+                                                               "Mood","Fear","Externalizing")))
 
 cpanel <- ggplot(data=full.list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
   scale_alpha_discrete(range=c(0.18, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
