@@ -16,6 +16,8 @@ names(ncnvs)[1] <- 'chipids'
 
 newmerge <- merge(chip.markers,ncnvs,by = 'chipids')
 
+length(unique(chip.qc.cag$cag_id))
+
 # Markers - CNV criteria
 cleanmerge <- newmerge %>%
   filter(Freq<50 | nmarkers > 1000000) %>%
@@ -27,6 +29,8 @@ cleanmerge$ChipID <- unlist(strsplit(cleanmerge$chipids,'.int.csv'))
 chip.qc.cag <- chip.qc.cag %>% 
   filter(ChipID %in% cleanmerge$ChipID)
 
+length(unique(chip.qc.cag$cag_id))
+
 # Exclude baf, lrr, wf
 chip.qc.cag <- chip.qc.cag %>% 
   filter(lrrsd<0.35)
@@ -36,6 +40,8 @@ chip.qc.cag <- chip.qc.cag %>%
 
 chip.qc.cag <- chip.qc.cag %>% 
   filter(abs(wavef)<0.05)
+
+length(unique(chip.qc.cag$cag_id))
 
 list.a <- chip.qc.cag %>% # Save a simplified cnv quality dataset for later use.
   select(1,4:7)
@@ -52,13 +58,19 @@ cnv.set$two.algs <- as.numeric(unlist(strsplit(cnv.set$X.Two.Algs,"%")))
 cnv.set <- cnv.set %>% 
   filter(Max.Score>=30)
 
+length(unique(cnv.set$cag_id))
+
 # Keep cnvs w/ both algorithm
 cnv.set <- cnv.set %>%
   filter(X.Algos==2)
 
+length(unique(cnv.set$cag_id))
+
 # Keep cnvs w/ 70% algorithm overlap
 cnv.set <- cnv.set %>% 
   filter(two.algs>=70)
+
+length(unique(cnv.set$cag_id))
 
 list.b <- chip.qc.cag %>% 
   filter(ChipID %in% cnv.set$ChipID)

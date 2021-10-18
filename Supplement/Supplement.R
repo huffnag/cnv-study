@@ -477,7 +477,7 @@ adataset %>%
   aes(x = pHI, y = Overall_Accuracy, group = PRS.IQgroup, color = PRS.IQgroup) +
   geom_point(color = "grey", alpha = .7) +
   geom_smooth(method = "lm")+
-  labs(colour="PRS.IQ Score")+
+  labs(colour="PGS-G Score")+
   ylab('Overall Accuracy')
 
 ### SFIG. 6 ----
@@ -770,7 +770,7 @@ ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=term)) +
   geom_vline(xintercept = 0,lty=2) +
   xlab("Standardized Effect") +
   ylab("") +
-  scale_color_discrete(name = "Term",labels=c('SES','pHI','PRS-G','PRS-SCZ','pTS','Trauma'))+
+  scale_color_discrete(name = "Term",labels=c('SES','pHI del.','PGS-G','PGS-SCZ','pTS dup.','Trauma'))+
   theme_linedraw()+
   xlim(-.1,.4)+
   facet_wrap(~va,ncol = 1,shrink = T,drop = T,scales = 'free')+

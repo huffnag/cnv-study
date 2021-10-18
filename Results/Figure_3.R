@@ -5,7 +5,7 @@ library(readxl) # for reading microsoft excel files
 library(sjPlot) # for regression model tables
 library(gridExtra)
 library(broom)
-path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/RData'
+path <- '/Users/aa2227/Documents/pncCNV/clean'
 figpath <- paste(path,'figs',sep='/')
 
 

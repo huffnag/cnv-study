@@ -154,7 +154,7 @@ adataset <- adataset %>%
 apanel <- ggplot(adataset,aes(x=log(pHI+1),y=Overall_Accuracy))+
   geom_hex(bins=50)+
   scale_fill_gradientn(name='# subjects',colors = wes_palette(n=5, name="Zissou1"),trans='log10',guide = 'legend')+
-  ylim(-5,5)+
+  ylim(-8,8)+
   ylab('Overall Accuracy')+
   xlab('log(pHI+1)')+
   geom_smooth(method = 'lm',linetype='dashed',se=F,color="black")+
@@ -168,7 +168,7 @@ apanel <- ggplot(adataset,aes(x=log(pHI+1),y=Overall_Accuracy))+
 bpanel <- ggplot(adataset,aes(x=log(pHI+1),y=Bifactor_Psychosis_ar))+
   geom_hex(bins=50)+
   scale_fill_gradientn(name='n subjects',colors = wes_palette(n=5, name="Zissou1"),trans='log10',guide = 'legend')+
-  ylim(-5,5)+
+  ylim(-8,8)+
   ylab('Bifactor Psychosis')+
   xlab('log(pHI+1)')+
   geom_smooth(method = 'lm',linetype='dashed',se=F,color="black")+

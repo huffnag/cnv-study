@@ -268,6 +268,8 @@ adding.cnv[,1] <- NA
 names(adding.cnv) <- names(cnv.data)
 cnv.data <- rbind(cnv.data,adding.cnv) # this cnv level data now has the 'empty' chips
 
+save(cnv.data,file = paste(path,'cnv_pre_subjectlevel.RData'))
+
 ### 9. Pick lowest lrrsd for subs w/ more than 1 chip
 chipppers <- cnv.data %>% 
   group_by(cag_id) %>% 
