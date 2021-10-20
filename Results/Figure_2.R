@@ -1,54 +1,84 @@
 
-# NOTE #
-# Run Annotation_1 before this script to get 'pTSpHI.cag.annotated.26feb.RData'
-
-library(broom)
-library(wesanderson)
+# Load packages -----
 library(tidyverse) # for manipulating data 
+library(readxl) # for reading microsoft excel files
 library(sjPlot) # for regression model tables
-library(data.table) # for turning lists into dataframes
-library(ggpubr)
 library(gridExtra)
 library(broom)
-library(clipr)
-
-# Set path to data files and load data -----
 path <- '/Users/aa2227/Documents/pncCNV/clean'
 figpath <- paste(path,'figs',sep='/')
 
-regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
-#load(paste(path,'illumina.25january.RData',sep = '/')) # cleaned chip dataset
+
+read_excel_allsheets <- function(filename, tibble = T) { # a function to read all 3 sheets from the PRS excel file
+  sheets <- readxl::excel_sheets(filename)
+  x <- lapply(sheets, function(X) readxl::read_excel(filename, sheet = X))
+  if(!tibble) x <- lapply(x, as.data.frame)
+  names(x) <- sheets
+  x}
+
+prs_data <- read_excel_allsheets(paste(path,'GO_PNC_PRS_MatchingIDs.xlsx',sep = '/')) # dataset with PRS scores for the PNC
+Residual_PNC_EUR_IQ_PRS <- as.data.frame(prs_data[1])
+Residual_PNC_EUR_SCZ_PRS <- as.data.frame(prs_data[2])
+Linker <- as.data.frame(prs_data[3])
+load(paste(path,'illumina.11feb.RData',sep = '/')) # cleaned chip dataset
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
 load(paste(path,'pTSpHI.cag.annotated.26feb.RData',sep = '/')) # the LOF and Burden CNV data
+rm(prs_data)
 
-# Merge together the LOF dataset with cleaned chip subjects and PNC CNB 
-adataset <- merge(cogdata,subject.annotated,by='cag_id')
+# Merge together the PRS dataset with cleaned chip subjects and PNC CNB 
+prs.in.cnv <- Residual_PNC_EUR_IQ_PRS %>%
+  filter(Residual_PNC_EUR_IQ_PRS.MATCHING_CAG_CHIP_ID %in% cnv.data$ChipID) %>% 
+  dplyr::rename(ChipID=Residual_PNC_EUR_IQ_PRS.MATCHING_CAG_CHIP_ID) %>% 
+  select(3:18)
 
-adataset <- adataset %>% 
+linked <- cnv.data %>%
+  select(ChipID,cag_id) %>%
+  filter(ChipID %in% prs.in.cnv$ChipID) %>% 
+  distinct(ChipID,.keep_all = T)
+
+newprs.in.cnv <- merge(prs.in.cnv,linked,by='ChipID')
+
+full_datamerge <- merge(newprs.in.cnv,cogdata,by='cag_id') # Get cognition data and merge with prs data
+
+full_datamerge <- merge(full_datamerge,subject.annotated,by='cag_id') # Get LOF and Burden data and merge with prs data
+
+full_datamerge.euro <- full_datamerge %>%
   mutate(sex=as.factor(sex),
-         race2=as.factor(race2),
-         pHI_0=ifelse(pHI>0,1,0)) %>% 
-  mutate(pHI_0=as.factor(pHI_0),
-         Trauma=as.numeric(traumaExposure))
+         race2=as.factor(race2))
 
-covars <- c('envSES','sex2','race2 [2]','race2 [3]','Trauma')
+scz.in.cnv <- Residual_PNC_EUR_SCZ_PRS %>%
+  filter(Residual_PNC_EUR_SCZ_PRS.MATCHING_CAG_CHIP_ID %in% cnv.data$ChipID) %>%
+  dplyr::rename(ChipID=Residual_PNC_EUR_SCZ_PRS.MATCHING_CAG_CHIP_ID) %>%
+  select(3:18)
 
-names(adataset)[31:36] <- substr(names(adataset[31:36]),4,100)
-cog.list <- names(adataset[c(28:29,31:36)])
+full_datamerge.euro <- merge(full_datamerge.euro,scz.in.cnv,by='ChipID') # Get LOF and Burden data and merge with prs data
 
-ttest_fun = function(response,input){
-  form <- paste(response, "~ scale(",input,")",'+ envSES+scale(pTS)+Trauma+race2+sex')
+pcs <- grep('.PC',names(full_datamerge.euro))
+
+termlist <- names(full_datamerge.euro)[pcs] # all the PC's
+
+adataset <- full_datamerge.euro %>% 
+  mutate(Trauma=as.numeric(traumaExposure))
+
+covars <- c('envSES','sex2','race2 [2]','race2 [3]')
+
+names(adataset)[47:52] <- substr(names(adataset[47:52]),4,100)
+
+cog.list <- names(adataset[c(44:45,47:52)])
+names(adataset)[16] <- "PRS.IQ"
+names(adataset)[88] <- "PRS.SCZ"
+psy.list <- names(adataset[57:61])
+
+#prs.iq with covar
+ttest_fun = function(response,input) {
+  form <- paste(response, "~ scale(",input,")+scale(Trauma)+scale(pHI)+scale(pTS)+scale(PRS.SCZ)+scale(envSES) + race2 + sex",'+',paste(termlist[1:10],collapse = '+'))
   cbind(glance(lm(as.formula(form), data = adataset))[c(1:4,6:12)],
         tidy(conf.int=T,lm(as.formula(form),
                            data = adataset))[,c(1:3,5:7)],response)}
 
-list <- lapply(cog.list,FUN = ttest_fun,input="pHI")
+list <- lapply(cog.list,FUN = ttest_fun,input="PRS.IQ")
 list <- as.data.frame(do.call(rbind,list))
-
-list <- list %>% 
-  filter(!term %in% c('(Intercept)','sex2','race22','race23','envSES','Trauma')) %>% 
-  arrange(estimate) %>% 
-  mutate(var='Cognitive Outcome')
+list <- list %>% arrange(estimate)
 
 list$response <- gsub('_', " ", list$response)
 
@@ -58,19 +88,41 @@ list$response <- gsub('Comp', "Complex", list$response)
 
 list$response <- gsub('Exec', "Executive", list$response)
 
-full.list <- list
+vars <- c('scale(envSES)','scale(PRS.IQ)','scale(pHI)','scale(Trauma)')
 
-names(adataset)[c(21:24,41:45)] #<- substr(names(adataset[31:40]),4,100)
-corr.list <- names(adataset)[21:24]
-bifac.list <- names(adataset)[41:45]
+list <- list %>% 
+  mutate(fdr=p.adjust(p.value,method = 'fdr')) %>% 
+  mutate(signif=ifelse(fdr<0.05,'yes','no')) %>% 
+  filter(term %in% vars)
+  
 
-# Model Psych ~ pHI
-list <- lapply(corr.list,FUN = ttest_fun,input="pHI")
+listbind <- list %>% 
+  mutate(va='Models of cognition')
+
+
+listbind$response <- factor(listbind$response,levels = rev(c('Overall Accuracy','Executive Complex Cognition Accuracy','Memory Accuracy',
+                                                             "Social Cognition Accuracy","Overall Speed","Memory Speed",
+                                                             "Slow Speed","Fast Speed")))
+
+iq <- ggplot(data=list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
+  scale_alpha_discrete(range=c(0.35, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
+  geom_point() +
+  geom_vline(xintercept = 0,lty=2) +
+  xlab("Standardized Effect") +
+  ylab("") +
+  scale_color_discrete(name = "Term")+
+  theme_linedraw()#+
+#xlim(0,.3)
+
+#prs.scz with covar
+list <- lapply(psy.list,FUN = ttest_fun,input="PRS.IQ")
 list <- as.data.frame(do.call(rbind,list))
-list <- list %>%
-  arrange(estimate) %>% 
-  filter(!term %in% c('(Intercept)','sex2','race22','race23','envSES','Trauma')) %>% 
-  mutate(var='Correlated Traits Model')
+list <- list %>% arrange(estimate)
+
+list <- list %>% 
+  mutate(fdr=p.adjust(p.value,method = 'fdr')) %>% 
+  mutate(signif=ifelse(fdr<0.05,'yes','no')) %>% 
+  filter(term %in% vars)
 
 list$response <- gsub('_ar', "", list$response)
 
@@ -84,101 +136,51 @@ list$response <- gsub('PSYCHOSIS', "Psychosis", list$response)
 
 list$response <- gsub('FEAR', "Fear", list$response)
 
-list$response <- gsub('CorrTraits', "", list$response)
+listbind2 <- list %>% 
+  mutate(va='Models of psychopathology')
 
-full.list <- rbind(full.list,list)
+listbind2$response <- factor(listbind2$response,levels = rev(c("Bifactor Psychosis","Bifactor Overall Psychopathology",
+                                                               "Bifactor Mood","Bifactor Fear","Bifactor Externalizing")))
 
-list <- lapply(bifac.list,FUN = ttest_fun,input="pHI")
-list <- as.data.frame(do.call(rbind,list))
-list <- list %>% 
-  arrange(estimate) %>% 
-  filter(!term %in% c('(Intercept)','sex2','race22','race23','envSES','Trauma')) %>% 
-  mutate(var='Bifactor Model')
-
-list$response <- gsub('_ar', "", list$response)
-
-list$response <- gsub('_', " ", list$response)
-
-list$response <- gsub('Bifactor', "", list$response)
-
-list$response <- factor(list$response, levels = list$response)
-
-full.list <- rbind(full.list,list)
-
-full.list <- full.list %>% 
-  mutate(fdr=p.adjust(p.value,method = 'fdr')) %>%
-  mutate(signif=ifelse(fdr<0.05,'yes','no'),
-         var=factor(var,levels = c('Cognitive Outcome','Bifactor Model','Correlated Traits Model')))
-
-full.list$response <- gsub(' $','',full.list$response)
-full.list$response <- gsub('^ ','',full.list$response)
-
-full.list$response <- factor(full.list$response,levels = rev(c('Overall Accuracy','Executive Complex Cognition Accuracy','Memory Accuracy',
-                                                               "Social Cognition Accuracy","Overall Speed","Memory Speed",
-                                                               "Slow Speed","Fast Speed","Psychosis","Overall Psychopathology",
-                                                               "Mood","Fear","Externalizing")))
-
-cpanel <- ggplot(data=full.list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
-  scale_alpha_discrete(range=c(0.18, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
-  geom_pointrange(size=.35,data = full.list %>% filter(signif=='yes'), aes(xmin=abs(conf.low), xmax=abs(conf.high)),position = position_jitter(height = 0.35)) +
-  geom_pointrange(size=.35,data = full.list %>% filter(signif=='no',estimate>0),aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.35)) +
-  geom_pointrange(size=.35,data = full.list %>% filter(signif=='no',estimate<0),aes(xmin=abs(estimate)-max(conf.high,conf.low), xmax=abs(conf.low)),position = position_jitter(height = 0.35)) +
+scz <- ggplot(data=list,aes(x=abs(estimate), y=response,alpha=factor(signif),color=term)) +
+  scale_alpha_discrete(range=c(0.35, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
+  geom_point() +
   geom_vline(xintercept = 0,lty=2) +
   xlab("Standardized Effect (Absolute Value)") +
   ylab("") +
+  scale_color_discrete(name = "Term")+
+  theme_linedraw()+
+  xlim(0,.3)
+
+full <- rbind(listbind,listbind2)
+
+tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf, y = Inf, 
+                       hjust = -0.5, vjust = 1.5, fontface = 2, family = "", ...) {
+  
+  gb <- ggplot_build(p)
+  lay <- gb$layout$layout
+  tags <- cbind(lay, label = paste0(open, tag_pool[lay$PANEL], close), x = x, y = y)
+  p + geom_text(data = tags, aes_string(x = "x", y = "y", label = "label"), ..., hjust = hjust, 
+                vjust = vjust, fontface = fontface, family = family, inherit.aes = FALSE)}
+
+# figure 3
+fig <- ggplot(data=full,aes(x=estimate, y=response,alpha=factor(signif),color=term)) +
+  scale_alpha_discrete(range=c(0.25, 1),name = "pFDR < 0.05", labels = c("False", "True")) +
+  geom_pointrange(aes(xmin=conf.low, xmax=conf.high),position = position_jitter(height = 0.2)) +
+  geom_vline(xintercept = 0,lty=2) +
+  xlab("Standardized Effect") +
+  ylab("") +
+  scale_color_discrete(name = "Term", labels = c("SES", "pHI del.",'PGS-g','Trauma'))+
   theme_light()+
-  scale_color_discrete(name = "Term", labels = c("pHI del.", "pTS dup."))+
-  facet_wrap(~var,ncol = 1,shrink = T,drop = T,scales = 'free')+
-  xlim(-0.025,.15)+
-  theme(legend.text = element_text(size = 12),
-        text = element_text(size=12))+
+  facet_wrap(~va,ncol = 1,shrink = T,drop = T,scales = 'free')+
+  theme(text = element_text(size=12))+
   theme(strip.text = element_text(colour = 'white'))+
+  coord_cartesian(xlim = c(-.15,.4),clip = 'off')+
   theme(strip.background =element_rect(fill="black"))
 
-# Set path to data files and load data -----
-regtable_path <- '/Users/huffnaglen/PNC CNV Project copy/Analysis/Regression Tables/Duplications'
-#load(paste(path,'illumina.25january.RData',sep = '/')) # cleaned chip dataset
-load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
-load(paste(path,'cag.annotated.3march.RData',sep = '/')) # the LOF and Burden CNV data
-
-# Merge together the LOF dataset with cleaned chip subjects and PNC CNB 
-adataset <- merge(cogdata,subject.annotated,by='cag_id')
-
-adataset <- adataset %>% 
-  mutate(sex=as.factor(sex),
-         race2=as.factor(race2),
-         pHI_0=ifelse(pHI>0,1,0)) %>% 
-  mutate(pHI_0=as.factor(pHI_0))
-
-
-apanel <- ggplot(adataset,aes(x=log(pHI+1),y=Overall_Accuracy))+
-  geom_hex(bins=50)+
-  scale_fill_gradientn(name='# subjects',colors = wes_palette(n=5, name="Zissou1"),trans='log10',guide = 'legend')+
-  ylim(-8,8)+
-  ylab('Overall Accuracy')+
-  xlab('log(pHI+1)')+
-  geom_smooth(method = 'lm',linetype='dashed',se=F,color="black")+
-  theme_light()+
-  theme(legend.position = c(.5, .8),
-        legend.direction = "horizontal",
-        legend.background = element_blank(),
-        legend.text = element_text(size = 8),
-        legend.title  = element_text(size = 8))
-
-bpanel <- ggplot(adataset,aes(x=log(pHI+1),y=Bifactor_Psychosis_ar))+
-  geom_hex(bins=50)+
-  scale_fill_gradientn(name='n subjects',colors = wes_palette(n=5, name="Zissou1"),trans='log10',guide = 'legend')+
-  ylim(-8,8)+
-  ylab('Bifactor Psychosis')+
-  xlab('log(pHI+1)')+
-  geom_smooth(method = 'lm',linetype='dashed',se=F,color="black")+
-  theme_light()+
-  theme(legend.position = 'none')
-
-pdf(file = paste(figpath,'fig2.v2.pdf',sep = '/'),width = 12,height = 6)
-
-grid.arrange(apanel, cpanel,bpanel, nrow=2,ncol=2,
-             layout_matrix = rbind(c(1,2), c(3,2)),
-             widths = c(1,1.75))
-
+pdf(file = paste(figpath,'fig3.pdf',sep = '/'),width = 10,height = 8)
+tag_facet2(fig,tag_pool = LETTERS,open = '',x=-.25,vjust = .4)
 dev.off()
+
+
+  

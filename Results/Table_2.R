@@ -1,11 +1,11 @@
-# Load packages
-library(tidyverse) # for manipulating data
+# Load packages -----
+library(tidyverse) # for manipulating data 
 library(data.table)
-library(clipr)
+library(clipr) 
 library(ggpubr)
 library(broom)
 
-# Set path to data files and load data
+# Set path to data files and load data -----
 path <- '/Users/aa2227/Documents/pncCNV/clean'
 load(paste(path,'pnc_cnb_data.RData',sep = '/')) # the PNC cognitive neurobehavioral battery dataset
 
@@ -25,10 +25,10 @@ deletions <- subject.annotated %>%
 
 subject.annotated <- merge(deletions,duplications,by = 'cag_id')
 
-# Merge together the LOF dataset with cleaned chip subjects and PNC CNB
+# Merge together the LOF dataset with cleaned chip subjects and PNC CNB 
 adataset <- merge(cogdata,subject.annotated,by='cag_id')
 
-adataset <- adataset %>%
+adataset <- adataset %>% 
   mutate(sex=as.factor(sex),
          race2=as.factor(race2),
          Trauma=as.numeric(traumaExposure))
@@ -71,7 +71,7 @@ input.dupes <- names(adataset[grep(pattern = 'dup.',names(adataset))])
 drop.list <- c('(Intercept)','envSES',"sex2","race22","race23",'Trauma')
 
 numer_mods <- rbindlist(map2(.x = input.dels, .y=input.dupes,
-                             ~model_func(input1 = .x,input2 = .y, response = "Overall_Accuracy",covars= TRUE)))
+                             ~model_func(input1 = .x,input2 = .y, response = "Bifactor_Psychosis_ar",covars= TRUE)))
 
 reg.result <- numer_mods %>% 
   filter(!term %in% drop.list) %>% 

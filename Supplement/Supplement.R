@@ -1,5 +1,7 @@
 # Supplemental code for CNV-STUDY
 
+# Note that the Figs/Tables are currently out of order relative to the submitted manuscript, TBD
+
 # Load packages
 library(tidyverse)
 library(data.table)
