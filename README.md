@@ -1,7 +1,7 @@
-### Title:
-# Omnigenic Impact of Copy Number Variants on Cognition and Psychopathology in the Philadelphia Neurodevelopmental Cohort
+### Code for:
+# Copy Number Variant Risk Scores Associated with Cognition, Psychopathology, and Brain Structure in the Philadelphia Neurodevelopmental Cohort
 
-#### Authors: TBD
+#### Alexander-Bloch et al., 2022.
 
 This repository contains code to perform CNV quality control, filtering, and annotation as described in this paper. These scripts are performed on output after running CNVision and filtering steps described at: https://github.com/MartineauJeanLouis/MIND-GENESPARALLELCNV
 
